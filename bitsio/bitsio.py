@@ -13,8 +13,8 @@ class BitsIO(BytesIO):
         self.value = 0
         self.left = 8
 
-    def read_bytes(self, size=1):
-        return int.from_bytes(self.read(size), byteorder='big')
+    def read_bytes(self, size=1, byteorder='bit'):
+        return int.from_bytes(self.read(size), byteorder=byteorder)
 
     def read_bits(self, size=1):
         if self.left == 8:
@@ -24,3 +24,6 @@ class BitsIO(BytesIO):
         res = (self.value >> left) & mask
         self.left = 8 if left == 0 else left
         return res
+
+    def read1(self):
+        ...
