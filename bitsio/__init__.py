@@ -2,6 +2,6 @@ from bitsio._version import (
     __version__,
 )
 
-from bitsio import (
+from bitsio.bitsio import (
     BitsIO,
 )
