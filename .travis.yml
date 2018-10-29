@@ -5,6 +5,13 @@ sudo: false
 #  only: 
 #    - master
 
+python: 
+  - "3.2" 
+  - "3.3" 
+  - "3.4"
+  - "3.5" 
+  - "3.6"
+
 before_install:
   - pip install -U pip wheel
   - pip install flake8
