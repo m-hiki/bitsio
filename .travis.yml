@@ -17,7 +17,7 @@ before_install:
 
 install:
   - python setup.py sdist
-  - python install dist/*.tar.gz
+  - pip install dist/*.tar.gz
 
 script:
   #- flake8
