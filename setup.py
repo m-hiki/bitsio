@@ -1,8 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-isobmff
-version: 0.1
-"""
 import os
 import sys
 from setuptools import setup, find_packages
