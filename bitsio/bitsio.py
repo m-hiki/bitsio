@@ -4,6 +4,8 @@ from io import BytesIO
 
 
 DEFAULT_BUFSIZE = 32
+OCTET = 8
+BYTES_LENGTH = DEFAULT_BUFSIZE // OCTET
 
 
 class BitsIO(object):
@@ -12,45 +14,53 @@ class BitsIO(object):
 
     def __init__(self,
                  buf,
-                 bitorder='msb',
-                 byteorder='big',
-                 bitbuf_size=DEFAULT_BUFSIZE):
+                 bitorder: str = 'msb',
+                 byteorder: str = 'big'):
         self.bytesio = BytesIO(buf)
+        if not bitorder in ['msb', 'lsb']:
+            raise ValueError("bitorder must be either 'msb' or 'lsb'")
+
         self.bitorder = bitorder
         self.byteorder = byteorder
-        self.bitbuf = 0
-        self.bitbuf_size = bitbuf_size
-        self.left = self.bitbuf_size
+        self.bitbuf_size = DEFAULT_BUFSIZE
+        self._init_wbitbuf()
+        self._init_rbitbuf()
+        self.get_shift = {
+            'msb': lambda left: left,
+            'lsb': lambda left: DEFAULT_BUFSIZE - left - 1
+        }
 
-    def read_bytes(self, size=1, byteorder='big'):
-        return int.from_bytes(self.read(size), byteorder=byteorder)
+    def read(self, size: int):
 
-    def read(self, size=1):
-        if self.left == 8:
-            self.value = self.read_bytes(1)
-        left = self.left - size
-        mask = (1 << size) - 1
-        res = (self.value >> left) & mask
-        self.left = 8 if left == 0 else left
-        return res
-
-    def read1(self):
         return 0
 
-    def write(self, bits, size):
+    def read1(self):
+        self.rleft -= 1
+        shift = self.get_shift[self.bitorder](self.rleft)
+        bit = self.rbitbuf >> shift
+        if self.rleft == 0:
+            self._init_rbitbuf()
+        return bit
+
+    def _init_rbitbuf(self):
+        self.rbitbuf = int.from_bytes(self.bytesio.read(
+            BYTES_LENGTH), byteorder=self.byteorder)
+        self.rleft = self.bitbuf_size
+
+    def write(self, bits: int, size: int):
         ...
 
-    def write1(self, bit):
-        self.left -= 1
+    def write1(self, bit: int):
+        self.wleft -= 1
+        shift = self.get_shift[self.bitorder](self.wleft)
+        self.wbitbuf |= bit << shift
 
-        if self.bitorder == 'msb':
-            shift = self.left
-        elif self.bitorder == 'lsb':
-            shift = self.bitbuf_size - self.left - 1
-
-        self.bitbuf |= bit << shift
-
-        if self.left == 0:
-            bytes = self.bitbuf
+        if self.wleft == 0:
+            bytes = self.wbitbuf.to_bytes(
+                length=BYTES_LENGTH, byteorder=self.byteorder)
             self.bytesio.write(bytes)
-            self.left = self.bitbuf_size
+            self._init_wbitbuf()
+
+    def _init_wbitbuf(self):
+        self.wbitbuf = 0
+        self.wleft = self.bitbuf_size
