@@ -19,7 +19,7 @@ requirements = [r.strip() for r in requirements]
 setup(
     name='bitsio',
     version=__version__,
-    description='The BitsIO is a class for reading/writing bitstream.',
+    description='The BitsIO is a bit stream I/O class.',
     author='Minoru Hiki',
     author_email='minoruhiki@gmail.com',
     url='https://github.com/m-hiki/bitsio',
