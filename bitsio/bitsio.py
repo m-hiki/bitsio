@@ -17,7 +17,7 @@ class BitsIO(object):
                  bitorder: str = 'msb',
                  byteorder: str = 'big'):
         self.bytesio = BytesIO(buf)
-        if not bitorder in ['msb', 'lsb']:
+        if bitorder not in['msb', 'lsb']:
             raise ValueError("bitorder must be either 'msb' or 'lsb'")
 
         self.bitorder = bitorder
