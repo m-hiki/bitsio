@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-import os
-import sys
 from setuptools import setup, find_packages
 
 
@@ -16,13 +14,14 @@ setup(
     name='bitsio',
     version=__version__,
     description='The BitsIO is a bit stream I/O class.',
+    long_description=open('README.rst').read(),
     author='Minoru Hiki',
     author_email='minoruhiki@gmail.com',
     url='https://github.com/m-hiki/bitsio',
     keywords=["bitstream", "io"],
     license='MIT License',
+    python_requires='>=3.3',
     install_requires=requirements,
     packages=find_packages(exclude=('tests', 'docs')),
     include_package_data=True,
-    long_description=open('README.rst').read()
 )
