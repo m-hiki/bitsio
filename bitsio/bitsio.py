@@ -13,6 +13,7 @@ BYTE_ORDER_ERROR = "bitorder must be either '{0}' or '{1}'".format(MSB, LSB)
 
 class BitsIO(object):
     """BitsIO
+    TODO: Document
     """
 
     def __init__(self,
@@ -33,10 +34,17 @@ class BitsIO(object):
         }
 
     def read(self, size: int):
-
+        """
+        TODO: Document
+        """
+        # TODO: msb first
+        # TODO: lsb first
         return 0
 
     def read1(self):
+        """
+        TODO: Document
+        """
         self.rleft -= 1
         shift = self.get_shift[self.bitorder](self.rleft)
         bit = (self.rbuf >> shift) & 1
@@ -50,6 +58,9 @@ class BitsIO(object):
         self.rleft = self.bitbuf_size
 
     def write1(self, bit: int):
+        """
+        TODO: Document
+        """
         self.wleft -= 1
         shift = self.get_shift[self.bitorder](self.wleft)
         self.wbuf |= (bit & 1) << shift
@@ -58,6 +69,9 @@ class BitsIO(object):
             self._flush()
 
     def write(self, bits: int, size: int):
+        """
+        TODO: Document
+        """
         l = size - self.wleft
         bits &= (1 << size) - 1
         # print('{:08b}'.format(bits))
@@ -74,8 +88,12 @@ class BitsIO(object):
 
             if self.wleft < self.bitbuf_size:
                 self.wbuf = bits << self.wleft
+        # TODO: lsb first
 
     def write_align(self):  # flash
+        """
+        TODO: Document
+        """
         ...
 
     def _flush(self):
@@ -91,4 +109,7 @@ class BitsIO(object):
         self.wleft = self.bitbuf_size
 
     def getvalue(self):
+        """
+        TODO: Document
+        """
         return self.bytesio.getvalue()
