@@ -5,7 +5,7 @@ from io import BytesIO
 
 DEFAULT_BUFSIZE = 32
 OCTET = 8
-BYTES_LENGTH = DEFAULT_BUFSIZE // OCTET
+NUM_BYTES = DEFAULT_BUFSIZE // OCTET
 MSB = 'big'
 LSB = 'little'
 BYTE_ORDER_ERROR = "bitorder must be either '{0}' or '{1}'".format(MSB, LSB)
@@ -46,7 +46,7 @@ class BitsIO(object):
 
     def _init_rbuf(self):
         self.rbuf = int.from_bytes(self.bytesio.read(
-            BYTES_LENGTH), byteorder=self.byteorder)
+            NUM_BYTES), byteorder=self.byteorder)
         self.rleft = self.bitbuf_size
 
     def write1(self, bit: int):
@@ -80,7 +80,7 @@ class BitsIO(object):
 
     def _flush(self):
         bytes = self.wbuf.to_bytes(
-            length=BYTES_LENGTH, byteorder=self.byteorder)
+            length=NUM_BYTES, byteorder=self.byteorder)
         #print('wbuf: {:032b}'.format(self.wbuf))
         #print('bytes:   {0}'.format(bytes))
         self.bytesio.write(bytes)
