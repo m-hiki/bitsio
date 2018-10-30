@@ -20,7 +20,7 @@ setup(
     url='https://github.com/m-hiki/bitsio',
     keywords=["bitstream", "io"],
     license='MIT License',
-    python_requires='>=3.3',
+    python_requires='>=3.4',
     install_requires=requirements,
     packages=find_packages(exclude=('tests', 'docs')),
     include_package_data=True,
