@@ -6,6 +6,9 @@ from io import BytesIO
 DEFAULT_BUFSIZE = 32
 OCTET = 8
 BYTES_LENGTH = DEFAULT_BUFSIZE // OCTET
+MSB = 'big'
+LSB = 'little'
+BYTE_ORDER_ERROR = "bitorder must be either '{0}' or '{1}'".format(MSB, LSB)
 
 
 class BitsIO(object):
@@ -14,20 +17,19 @@ class BitsIO(object):
 
     def __init__(self,
                  buf,
-                 bitorder: str = 'msb',
-                 byteorder: str = 'big'):
+                 bitorder: str):
         self.bytesio = BytesIO(buf)
-        if bitorder not in['msb', 'lsb']:
-            raise ValueError("bitorder must be either 'msb' or 'lsb'")
+        if bitorder not in [MSB, LSB]:
+            raise ValueError(BYTE_ORDER_ERROR)
 
         self.bitorder = bitorder
-        self.byteorder = byteorder
+        self.byteorder = bitorder  # Byte order must be equal to bit order
         self.bitbuf_size = DEFAULT_BUFSIZE
         self._init_wbitbuf()
         self._init_rbitbuf()
         self.get_shift = {
-            'msb': lambda left: left,
-            'lsb': lambda left: DEFAULT_BUFSIZE - left - 1
+            MSB: lambda left: left,
+            LSB: lambda left: DEFAULT_BUFSIZE - left - 1
         }
 
     def read(self, size: int):
@@ -37,7 +39,7 @@ class BitsIO(object):
     def read1(self):
         self.rleft -= 1
         shift = self.get_shift[self.bitorder](self.rleft)
-        bit = self.rbitbuf >> shift
+        bit = (self.rbitbuf >> shift) & 1
         if self.rleft == 0:
             self._init_rbitbuf()
         return bit
@@ -53,7 +55,7 @@ class BitsIO(object):
     def write1(self, bit: int):
         self.wleft -= 1
         shift = self.get_shift[self.bitorder](self.wleft)
-        self.wbitbuf |= bit << shift
+        self.wbitbuf |= (bit & 1) << shift
 
         if self.wleft == 0:
             bytes = self.wbitbuf.to_bytes(
