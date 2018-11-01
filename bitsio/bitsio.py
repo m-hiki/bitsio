@@ -4,6 +4,7 @@ from io import BytesIO
 
 
 DEFAULT_BUFSIZE = 32
+BUF_MASK = (1 << DEFAULT_BUFSIZE) - 1
 OCTET = 8
 NUM_BYTES = DEFAULT_BUFSIZE // OCTET
 MSB = 'big'
@@ -61,9 +62,7 @@ class BitsIO(object):
         """
         TODO: Document
         """
-        self.wleft -= 1
-        shift = self.get_shift[self.bitorder](self.wleft)
-        self.wbuf |= (bit & 1) << shift
+        self._write_bits(bit, 1)
 
         if self.wleft == 0:
             self._flush()
@@ -72,35 +71,65 @@ class BitsIO(object):
         """
         TODO: Document
         """
-        l = size - self.wleft
-        bits &= (1 << size) - 1
-        # print('{:08b}'.format(bits))
-
+        # TODO: if size > bitbuf_size
         # msb first
-        if l < 0:
-            shift = -l
-            self.wbuf |= bits << shift
-            self.wleft = shift
+        """
+        left = self.wleft - size
+
+        if left > 0:
+            shift = self.get_shift[self.bitorder](left)
+            self._write_bits(bits, shift)
+            self.wleft = left
         else:
-            self.wbuf |= bits >> l
+            shift = 0
+            self._write_bits(bits >> (-left), shift)  # TODO: lsb first
             self._flush()
-            self.wleft = self.bitbuf_size - l
+            self.wleft = self.bitbuf_size + left
 
             if self.wleft < self.bitbuf_size:
-                self.wbuf = bits << self.wleft
-        # TODO: lsb first
+                shift = self.get_shift[self.bitorder](self.wleft)
+                self._write_bits(bits, shift)
+        return
+        """
+        # size = 10, wleft = 32, 10 - 32 = -22, 前半はなし。後半に10
+        # size = 32, wleft = 32, 32 - 32 = 0, 前半に32。
+        # size = 16, wleft = 10, 16 - 10 = 6: 10が前半、後半が6
+        remainbits_size = size - self.wleft
 
-    def write_align(self):  # flash
+        if remainbits_size >= 0:
+            if self.bitorder == MSB:
+                remainbits = bits >> remainbits_size
+            elif self.bitorder == LSB:
+                remainbits = bits & ((1 << self.wleft) - 1)
+            self._write_bits(remainbits, self.wleft)
+            self._flush()
+            size = remainbits_size
+
+        if size > 0:
+            self._write_bits(bits, size)
+
+    def write_align(self):  # flush
         """
         TODO: Document
         """
         ...
 
+    def _write_bits(self, bits, size):
+        bits &= (1 << size) - 1  # mask
+        left = self.wleft - size
+        # shift = self.get_shift[self.bitorder](left)
+        if self.bitorder == MSB:
+            shift = left
+        elif self.bitorder == LSB:
+            shift = DEFAULT_BUFSIZE - left - 1
+        self.wbuf |= (bits << shift) & BUF_MASK
+        self.wleft = left
+
     def _flush(self):
+        # print('wbuf: {:032b}'.format(self.wbuf))
         bytes = self.wbuf.to_bytes(
             length=NUM_BYTES, byteorder=self.byteorder)
-        #print('wbuf: {:032b}'.format(self.wbuf))
-        #print('bytes:   {0}'.format(bytes))
+        # print('bytes:   {0}'.format(bytes))
         self.bytesio.write(bytes)
         self._init_wbuf()
 
