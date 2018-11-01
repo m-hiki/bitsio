@@ -12,8 +12,8 @@ python:
 
 before_install:
   - pip install -U pip wheel
+  - pip install pycodestyle
   - pip install flake8
-  - pip install autopep8
 
 install:
   - python setup.py sdist
@@ -21,7 +21,7 @@ install:
 
 script:
   #- flake8
-  #- autopep8
+  - pep8
   - pushd tests
   - python -m unittest discover
   - popd
