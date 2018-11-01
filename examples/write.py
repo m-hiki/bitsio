@@ -1,6 +1,7 @@
 
 from bitsio import BitsIO
 
+
 def main():
     ...
 
