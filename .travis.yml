@@ -21,7 +21,7 @@ install:
 
 script:
   #- flake8
-  - pep8
+  - pycodestyle
   - pushd tests
   - python -m unittest discover
   - popd
