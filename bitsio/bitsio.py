@@ -46,9 +46,26 @@ class BitsIO(object):
         """
         TODO: Document
         """
+        latterbits_size = size - self.left
+        bits = 0
+
+        print('latterbits_size: {0}'.format(latterbits_size))
+        print('left: {0}'.format(self.left))
+        # left: 4, size: 8,  8 - 4 = 4
+        if latterbits_size >= 0:
+            firstbits = self._read_bits(self.left)
+            if self.bitorder == MSB:
+                bits = firstbits << latterbits_size
+            elif self.bitorder == LSB:
+                bits = firstbits
+            print('bits: {0}'.format(bits))
+            size = latterbits_size
+
         if self.left == self.bitbuf_size:
             self._load()
-        bits = self._read_bits(size)
+
+        if size > 0:
+            bits |= self._read_bits(size)
         return bits
 
     def _load(self):
@@ -57,11 +74,10 @@ class BitsIO(object):
 
     def _read_bits(self, size):
         shift = self._get_shift(size)
-
-        if self.bitorder == MSB:
-            shift = self.left - size
-        elif self.bitorder == LSB:
-            shift = self.bitbuf_size - self.left
+        print('size: {0}'.format(size))
+        print('shift: {0}'.format(shift))
+        print('buf: {0:032b}'.format(self.buf))
+        print('res: {0}'.format(self.buf >> shift))
         bit = mask(self.buf >> shift, size)
         self.left -= size
 
@@ -151,5 +167,6 @@ class BitsIO(object):
 
         Change stream position.
         """
+        # TODO: implement
         bytes_pos = 0
         self.bytesio.seek(bytes_pos)

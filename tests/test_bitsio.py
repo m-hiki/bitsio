@@ -46,17 +46,23 @@ class TestBitsIO(unittest.TestCase):
         expected_pos = 0
 
         for size in sizes:
-            print(size)
             sbits = TEST_BITS[endian][expected_pos:expected_pos + size]
+            print('--------------')
+            print('sbits: {0}'.format(sbits))
             if endian == 'little':
                 sbits = sbits[::-1]
             expected_bits = int(sbits, 2)
+            print('expected_bits: {0}'.format(expected_bits))
             actual_bits = bitsio.read(size)
+            print('actual_bits: {0}'.format(actual_bits))
             self.assertEqual(expected_bits, actual_bits)
+            expected_pos += size
+            actual_pos = bitsio.tell()
+            self.assertEqual(expected_pos, actual_pos)
 
     def test_read(self):
         self._test_read('big')
-        # self._test_read('little')
+        self._test_read('little')
 
     def _test_write1(self, endian):
         bitsio = BitsIO(b'', bitorder=endian)
