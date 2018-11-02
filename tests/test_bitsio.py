@@ -4,8 +4,10 @@ from bitsio import BitsIO
 
 TEST_BYTES = bytearray([1, 2, 3, 4, 5, 6, 7, 8])
 TEST_BITS = {
-    'big': '0000000100000010000000110000010000000101000001100000011100001000',
-    'little': '1000000001000000110000000010000010100000011000001110000000010000',
+    'big':
+        '0000000100000010000000110000010000000101000001100000011100001000',
+    'little':
+        '1000000001000000110000000010000010100000011000001110000000010000',
 }
 
 
@@ -32,12 +34,11 @@ class TestBitsIO(unittest.TestCase):
             self.assertEqual(int(expected_bit), actual_bit)
 
         pos = bitsio.tell()
-        self.assertEqual(len(expected_bit), pos)
+        self.assertEqual(len(expected_bits), pos)
 
     def test_read1(self):
-        # self._test_rea1('big')
-        # self._test_rea1('little')
-        ...
+        self._test_rea1('big')
+        self._test_rea1('little')
 
     def _test_read(self, endian):
         ...

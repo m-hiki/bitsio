@@ -4,12 +4,15 @@ from io import BytesIO
 
 
 DEFAULT_BUFSIZE = 32
-BUF_MASK = (1 << DEFAULT_BUFSIZE) - 1
 OCTET = 8
 NUM_BYTES = DEFAULT_BUFSIZE // OCTET
 MSB = 'big'
 LSB = 'little'
 BYTE_ORDER_ERROR = "bitorder must be either '{0}' or '{1}'".format(MSB, LSB)
+
+
+def mask(bits, size):
+    return bits & ((1 << size) - 1)
 
 
 class BitsIO(object):
@@ -28,10 +31,6 @@ class BitsIO(object):
         self.byteorder = bitorder  # Byte order must be equal to bit order
         self.bitbuf_size = DEFAULT_BUFSIZE
         self._init_buf()
-        self.get_shift = {
-            MSB: lambda left: left,
-            LSB: lambda left: DEFAULT_BUFSIZE - left - 1
-        }
         self.bytesio_pos = 0
 
     def read1(self):
@@ -39,26 +38,36 @@ class BitsIO(object):
         TODO: Document
         """
         if self.left == self.bitbuf_size:
-            self._draw()
+            self._load()
 
-        self.left -= 1
-        shift = self.get_shift[self.bitorder](self.left)
-        bit = (self.buf >> shift) & 1
-        return bit
+        return self._read_bits(1)
 
     def read(self, size: int):
         """
         TODO: Document
         """
-        # TODO: msb first
-        # TODO: lsb first
-        return 0
+        if self.left == self.bitbuf_size:
+            self._load()
+        bits = self._read_bits(size)
+        return bits
 
-    def _draw(self):
-        self._init_buf()
+    def _load(self):
         bytes = self.bytesio.read(NUM_BYTES)
         self.buf = int.from_bytes(bytes, byteorder=self.byteorder)
-        self.bytesio_pos = self.bytesio.tell() - NUM_BYTES
+
+    def _read_bits(self, size):
+        shift = self._get_shift(size)
+
+        if self.bitorder == MSB:
+            shift = self.left - size
+        elif self.bitorder == LSB:
+            shift = self.bitbuf_size - self.left
+        bit = mask(self.buf >> shift, size)
+        self.left -= size
+
+        if self.left == 0:
+            self._init_buf()
+        return bit
 
     def write1(self, bit: int):
         """
@@ -99,13 +108,9 @@ class BitsIO(object):
         self._flush()
 
     def _write_bits(self, bits, size):
-        bits &= (1 << size) - 1  # mask
-        if self.bitorder == MSB:
-            shift = self.left - size
-        elif self.bitorder == LSB:
-            shift = DEFAULT_BUFSIZE - self.left
-            #print('shift: {0}'.format(shift))
-        self.buf |= (bits << shift) & BUF_MASK
+        bits = mask(bits, size)
+        shift = self._get_shift(size)
+        self.buf |= mask(bits << shift, self.bitbuf_size)
         self.left -= size
 
     def _flush(self):
@@ -114,11 +119,18 @@ class BitsIO(object):
         # print('bytes:   {0}'.format(bytes))
         self.bytesio.write(bytes)
         self._init_buf()
-        self.bytesio_pos = self.bytesio.tell()
 
     def _init_buf(self):
         self.buf = 0
         self.left = self.bitbuf_size
+        self.bytesio_pos = self.bytesio.tell()
+
+    def _get_shift(self, size):
+        if self.bitorder == MSB:
+            shift = self.left - size
+        elif self.bitorder == LSB:
+            shift = self.bitbuf_size - self.left
+        return shift
 
     def getvalue(self):
         """
