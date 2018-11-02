@@ -40,7 +40,8 @@ class BitsIO(object):
         if self.left == self.bitbuf_size:
             self._load()
 
-        return self._read_bits(1)
+        bit = self._read_bits(1)
+        return bit
 
     def read(self, size: int):
         """
@@ -48,24 +49,23 @@ class BitsIO(object):
         """
         latterbits_size = size - self.left
         bits = 0
+        shift = 0
 
-        print('latterbits_size: {0}'.format(latterbits_size))
-        print('left: {0}'.format(self.left))
-        # left: 4, size: 8,  8 - 4 = 4
         if latterbits_size >= 0:
+            shift = self.left
             firstbits = self._read_bits(self.left)
             if self.bitorder == MSB:
                 bits = firstbits << latterbits_size
+                shift = 0
             elif self.bitorder == LSB:
                 bits = firstbits
-            print('bits: {0}'.format(bits))
             size = latterbits_size
 
         if self.left == self.bitbuf_size:
             self._load()
 
         if size > 0:
-            bits |= self._read_bits(size)
+            bits |= self._read_bits(size) << shift
         return bits
 
     def _load(self):
@@ -74,10 +74,6 @@ class BitsIO(object):
 
     def _read_bits(self, size):
         shift = self._get_shift(size)
-        print('size: {0}'.format(size))
-        print('shift: {0}'.format(shift))
-        print('buf: {0:032b}'.format(self.buf))
-        print('res: {0}'.format(self.buf >> shift))
         bit = mask(self.buf >> shift, size)
         self.left -= size
 
