@@ -1,5 +1,6 @@
-"""
-"""
+# Copyright 2018 Minoru Hiki
+# License: MIT, see LICENSE for more detail
+
 DEFAULT_BUFSIZE = 32
 OCTET = 8
 NUM_BYTES = DEFAULT_BUFSIZE // OCTET
@@ -21,8 +22,7 @@ def mask(bits, size):
 
 
 class BitsIO(object):
-    """BitsIO
-    TODO: Document
+    """BitsIO　is a bit stream I/O class.
     """
 
     def __init__(self,
@@ -40,7 +40,6 @@ class BitsIO(object):
         self.byteorder = bitorder  # Byte order must be equal to bit order
         self.bitbuf_size = DEFAULT_BUFSIZE
         self._init_buf()
-        self.iopos = 0
 
     def read1(self):
         """

@@ -1,3 +1,5 @@
+# Copyright 2018 Minoru Hiki
+# License: MIT, see LICENSE for more detail
 import unittest
 from io import BytesIO
 from bitsio import BitsIO
