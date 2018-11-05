@@ -1,4 +1,5 @@
 import unittest
+from io import BytesIO
 from bitsio import BitsIO
 
 
@@ -17,14 +18,15 @@ class TestBitsIO(unittest.TestCase):
         exception = None
 
         try:
-            BitsIO(b'', bitorder='NotMsbOrLsb')
+            BitsIO(BytesIO(b''), bitorder='NotMsbOrLsb')
         except Exception as e:
             exception = e
 
         self.assertEqual(ValueError, exception.__class__)
 
     def _test_rea1(self, endian):
-        bitsio = BitsIO(TEST_BYTES, bitorder=endian)
+        bytesio = BytesIO(TEST_BYTES)
+        bitsio = BitsIO(bytesio, bitorder=endian)
         expected_bits = TEST_BITS[endian]
 
         for expected_pos, expected_bit in enumerate(expected_bits):
@@ -41,7 +43,8 @@ class TestBitsIO(unittest.TestCase):
         self._test_rea1('little')
 
     def _test_read(self, endian):
-        bitsio = BitsIO(TEST_BYTES, bitorder=endian)
+        bytesio = BytesIO(TEST_BYTES)
+        bitsio = BitsIO(bytesio, bitorder=endian)
         sizes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 9]
         expected_pos = 0
 
@@ -61,7 +64,8 @@ class TestBitsIO(unittest.TestCase):
         self._test_read('little')
 
     def _test_write1(self, endian):
-        bitsio = BitsIO(b'', bitorder=endian)
+        bytesio = BytesIO(b'')
+        bitsio = BitsIO(bytesio, bitorder=endian)
         input = TEST_BITS[endian]
 
         for expected_pos, bit in enumerate(input):
@@ -69,7 +73,7 @@ class TestBitsIO(unittest.TestCase):
             self.assertEqual(expected_pos, actual_pos)
             bitsio.write1(int(bit, 2))
 
-        actual_values = bitsio.getvalue()
+        actual_values = bytesio.getvalue()
         self.assertEqual(TEST_BYTES, actual_values)
         pos = bitsio.tell()
         self.assertEqual(len(input), pos)
@@ -79,7 +83,8 @@ class TestBitsIO(unittest.TestCase):
         self._test_write1('little')
 
     def _test_write(self, endian):
-        bitsio = BitsIO(b'', bitorder=endian)
+        bytesio = BytesIO(b'')
+        bitsio = BitsIO(bytesio, bitorder=endian)
         sizes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 9]
         expected_pos = 0
 
@@ -93,7 +98,7 @@ class TestBitsIO(unittest.TestCase):
             actual_pos = bitsio.tell()
             self.assertEqual(expected_pos, actual_pos)
 
-        actual_bytebuf = bitsio.getvalue()
+        actual_bytebuf = bytesio.getvalue()
         self.assertEqual(TEST_BYTES, actual_bytebuf)
 
     def test_write(self):

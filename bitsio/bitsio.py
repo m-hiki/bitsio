@@ -1,13 +1,18 @@
 """
 """
-from io import BytesIO
-
-
 DEFAULT_BUFSIZE = 32
 OCTET = 8
 NUM_BYTES = DEFAULT_BUFSIZE // OCTET
 MSB = 'big'
 LSB = 'little'
+REQUIRE_METHODS = {
+    'read',
+    'write',
+    'tell',
+    'seek'
+}
+
+IOOBJ_ERROR = "ioobj must be the class implementing {0}() method"
 BYTE_ORDER_ERROR = "bitorder must be either '{0}' or '{1}'".format(MSB, LSB)
 
 
@@ -21,9 +26,13 @@ class BitsIO(object):
     """
 
     def __init__(self,
-                 buf,
+                 ioobj,
                  bitorder: str):
-        self.bytesio = BytesIO(buf)
+        for method in REQUIRE_METHODS:
+            if not hasattr(ioobj, method):
+                raise ValueError(IOOBJ_ERROR.format(method))
+
+        self.io = ioobj
         if bitorder not in [MSB, LSB]:
             raise ValueError(BYTE_ORDER_ERROR)
 
@@ -31,7 +40,7 @@ class BitsIO(object):
         self.byteorder = bitorder  # Byte order must be equal to bit order
         self.bitbuf_size = DEFAULT_BUFSIZE
         self._init_buf()
-        self.bytesio_pos = 0
+        self.iopos = 0
 
     def read1(self):
         """
@@ -69,7 +78,7 @@ class BitsIO(object):
         return bits
 
     def _load(self):
-        bytes = self.bytesio.read(NUM_BYTES)
+        bytes = self.io.read(NUM_BYTES)
         self.buf = int.from_bytes(bytes, byteorder=self.byteorder)
 
     def _read_bits(self, size):
@@ -129,13 +138,13 @@ class BitsIO(object):
         # print('wbuf: {:032b}'.format(self.buf))
         bytes = self.buf.to_bytes(length=NUM_BYTES, byteorder=self.byteorder)
         # print('bytes:   {0}'.format(bytes))
-        self.bytesio.write(bytes)
+        self.io.write(bytes)
         self._init_buf()
 
     def _init_buf(self):
         self.buf = 0
         self.left = self.bitbuf_size
-        self.bytesio_pos = self.bytesio.tell()
+        self.iopos = self.io.tell()
 
     def _get_shift(self, size):
         if self.bitorder == MSB:
@@ -144,18 +153,12 @@ class BitsIO(object):
             shift = self.bitbuf_size - self.left
         return shift
 
-    def getvalue(self):
-        """
-        ByteIO.getvalue() wrapper
-        """
-        return self.bytesio.getvalue()
-
     def tell(self):
         """
         Current position in bit stream, an integer.
         """
         bits = self.bitbuf_size - self.left
-        return self.bytesio_pos * OCTET + bits
+        return self.iopos * OCTET + bits
 
     def seek(self, pos):
         """
@@ -165,4 +168,4 @@ class BitsIO(object):
         """
         # TODO: implement
         bytes_pos = 0
-        self.bytesio.seek(bytes_pos)
+        self.io.seek(bytes_pos)
