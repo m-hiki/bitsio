@@ -134,9 +134,7 @@ class BitsIO(object):
         self.left -= size
 
     def _flush(self):
-        # print('wbuf: {:032b}'.format(self.buf))
         bytes = self.buf.to_bytes(length=NUM_BYTES, byteorder=self.byteorder)
-        # print('bytes:   {0}'.format(bytes))
         self.io.write(bytes)
         self._init_buf()
 
@@ -172,4 +170,3 @@ class BitsIO(object):
         self.io.seek(byte_pos)
         self.iopos = self.io.tell()
         self.left = self.bitbuf_size - bit_pos
-        #print('{0:032b}, {1}'.format(self.buf, self.left))
