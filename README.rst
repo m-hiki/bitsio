@@ -7,11 +7,8 @@ BitsIO: A bit stream I/O class
 .. image:: https://img.shields.io/github/license/m-hiki/bitsio.svg
   :target: https://github.com/m-hiki/bitsio
 
-.. image:: https://img.shields.io/pypi/m-hiki/bitsio.svg
-  :target: https://pypi.python.org/pypi/bitsio
-
 .. image:: https://img.shields.io/pypi/v/bitsio.svg
-  :target: https://pypi.python.org/pypi/bitsio
+  :target: https://pypi.org/project/bitsio/
 
 
 ---------------
