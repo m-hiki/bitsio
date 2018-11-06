@@ -3,6 +3,7 @@
 import unittest
 from io import BytesIO
 from bitsio import BitsIO
+from random import randint
 
 
 TEST_BYTES = bytearray([1, 2, 3, 4, 5, 6, 7, 8])
@@ -12,6 +13,10 @@ TEST_BITS = {
     'little':
         '1000000001000000110000000010000010100000011000001110000000010000',
 }
+TEST_POS = [
+    {'pos': 14, 'bit': 1},
+    {'pos': 14, 'bit': 1},
+]
 
 
 class TestBitsIO(unittest.TestCase):
@@ -106,6 +111,22 @@ class TestBitsIO(unittest.TestCase):
     def test_write(self):
         self._test_write('big')
         self._test_write('little')
+
+    def _test_seek(self, endian):
+        bytesio = BytesIO(TEST_BYTES)
+        bitsio = BitsIO(bytesio, bitorder=endian)
+        for _ in range(1, 100):
+            expected_pos = randint(0, 31)
+            expected_bit = int(TEST_BITS[endian][expected_pos])
+            bitsio.seek(expected_pos)
+            actual_pos = bitsio.tell()
+            self.assertEqual(expected_pos, actual_pos)
+            actual_bit = bitsio.read1()
+            self.assertEqual(expected_bit, actual_bit)
+
+    def test_seek(self):
+        self._test_seek('big')
+        self._test_seek('little')
 
 
 if __name__ == '__main__':

@@ -165,6 +165,11 @@ class BitsIO(object):
 
         Change stream position.
         """
-        # TODO: implement
-        bytes_pos = 0
-        self.io.seek(bytes_pos)
+        byte_pos, bit_pos = divmod(pos, self.bitbuf_size)
+        byte_pos *= NUM_BYTES
+        self.io.seek(byte_pos)
+        self._load()
+        self.io.seek(byte_pos)
+        self.iopos = self.io.tell()
+        self.left = self.bitbuf_size - bit_pos
+        #print('{0:032b}, {1}'.format(self.buf, self.left))
