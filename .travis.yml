@@ -1,0 +1,27 @@
+language: python
+sudo: false
+
+#branches:
+#  only: 
+#    - master
+
+python: 
+  - "3.4"
+  - "3.5" 
+  - "3.6"
+
+before_install:
+  - pip install -U pip wheel
+  - pip install pycodestyle
+  - pip install flake8
+
+install:
+  - python setup.py sdist
+  - pip install dist/*.tar.gz
+
+script:
+  #- flake8
+  - pycodestyle
+  - pushd tests
+  - python -m unittest discover
+  - popd
