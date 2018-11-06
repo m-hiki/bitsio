@@ -28,11 +28,31 @@ Use pip to install BitsIO:
 Usage
 ------------
 
+Example for reading:
 
 .. code-block:: python
-   from bitsio import BitsIO
 
-   
+    from io import BytesIO
+    from bitsio import BitsIO
+    
+    bytesio = BytesIO(b'HELLO')
+    bitsio = BitsIO(bytesio, bitorder='big')
+    for _ in range(1, 5):
+        print(chr(bitsio.read(8)))
+
+Example for writing:
+
+.. code-block:: python
+
+    from bitsio import BitsIO
+
+    test_input = 'HELLO'
+
+    with open('hello.txt', 'wb') as f:
+        bitsio = BitsIO(f, bitorder='big')
+        for s in test_input:
+            bitsio.write(ord(s), 8)
+
 
 Example test running:
 
